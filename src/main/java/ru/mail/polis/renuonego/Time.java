@@ -13,13 +13,11 @@ final class Time {
      * @return Returns current time in nano seconds
      */
     static long currentTimeInNano() {
-        synchronized (Time.class) {
-            final long currentTimeMillis = System.currentTimeMillis();
-            if (lastTimeInMillis != currentTimeMillis) {
-                lastTimeInMillis = currentTimeMillis;
-                countNanos = 0;
-            }
-            return lastTimeInMillis * 1_000_000 + countNanos++;
+        final long currentTimeMillis = System.currentTimeMillis();
+        if (lastTimeInMillis != currentTimeMillis) {
+            lastTimeInMillis = currentTimeMillis;
+            countNanos = 0;
         }
+        return lastTimeInMillis * 1_000_000 + countNanos++;
     }
 }
