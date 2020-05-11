@@ -189,7 +189,7 @@ class SSTable implements Table, Closeable {
 
     @Override
     public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("SSTable is immutable");
     }
 
     @Override

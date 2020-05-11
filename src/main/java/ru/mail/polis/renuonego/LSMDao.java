@@ -115,6 +115,12 @@ public final class LSMDao implements DAO {
 
     @Override
     public void close() throws IOException {
-        if (memTable.sizeInBytes() != 0) flush();
+        if (memTable.sizeInBytes() != 0) {
+            flush();
+
+            for (final SSTable ssTable : ssTables) {
+                ssTable.close();
+            }
+        }
     }
 }
