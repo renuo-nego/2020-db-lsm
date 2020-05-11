@@ -2,6 +2,7 @@ package ru.mail.polis.renuonego;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -13,13 +14,15 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-class SSTable implements Table {
+class SSTable implements Table, Closeable {
     private final ByteBuffer cells;
     private final LongBuffer offsets;
     private final int rows;
+    private final long sizeInBytes;
+    private final FileChannel channel;
 
     /**
-     * Creates an object for file on disk.
+     * Creates a new SSTable representation of data file.
      *
      * @param file to get a table
      * @throws IOException if an I/O error is thrown by a visitor method
@@ -27,9 +30,11 @@ class SSTable implements Table {
     SSTable(@NotNull final File file) throws IOException {
         final long fileSize = file.length();
         assert fileSize != 0 && fileSize <= Integer.MAX_VALUE;
+        this.sizeInBytes = file.length();
 
         final ByteBuffer mapped;
         try (FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.READ)) {
+            this.channel = fc;
             mapped = fc.map(FileChannel.MapMode.READ_ONLY, 0L, fileSize).order(ByteOrder.BIG_ENDIAN);
         }
 
@@ -189,11 +194,16 @@ class SSTable implements Table {
 
     @Override
     public void remove(@NotNull final ByteBuffer key) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("SSTable is immutable");
     }
 
     @Override
     public long sizeInBytes() {
-        throw new UnsupportedOperationException();
+        return sizeInBytes;
+    }
+
+    @Override
+    public void close() throws IOException {
+        channel.close();
     }
 }
