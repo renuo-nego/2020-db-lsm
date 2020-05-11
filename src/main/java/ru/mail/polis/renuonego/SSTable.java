@@ -33,9 +33,9 @@ class SSTable implements Table {
             mapped = fc.map(FileChannel.MapMode.READ_ONLY, 0L, fileSize).order(ByteOrder.BIG_ENDIAN);
         }
 
-        final long rows = mapped.getLong((int) (fileSize - Long.BYTES));
-        assert rows <= Integer.MAX_VALUE;
-        this.rows = (int) rows;
+        final long rowsLong = mapped.getLong((int) (fileSize - Long.BYTES));
+        assert rowsLong <= Integer.MAX_VALUE;
+        this.rows = (int) rowsLong;
 
         final ByteBuffer offsetBuffer = mapped.duplicate();
         offsetBuffer.position(mapped.limit() - Long.BYTES * this.rows - Long.BYTES);

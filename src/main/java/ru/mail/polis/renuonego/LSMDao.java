@@ -22,7 +22,6 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
-
 @SuppressWarnings("ConstantConditions")
 public final class LSMDao implements DAO {
     private static final String SUFFIX = ".dat";
@@ -68,12 +67,12 @@ public final class LSMDao implements DAO {
     @NotNull
     @Override
     public Iterator<Record> iterator(@NotNull final ByteBuffer from) throws IOException {
-        return Iterators.transform(CellIterator(from),
+        return Iterators.transform(cellIterator(from),
                 cell -> Record.of(cell.getKey(), cell.getValue().getData()));
     }
 
     @NotNull
-    private Iterator<Cell> CellIterator(@NotNull final ByteBuffer from) throws IOException {
+    private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from) throws IOException {
 
         final List<Iterator<Cell>> filesIterators = new ArrayList<>();
 
