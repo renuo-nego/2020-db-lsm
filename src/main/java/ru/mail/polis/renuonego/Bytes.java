@@ -8,7 +8,7 @@ final class Bytes {
 
     /**
      * Creates a new {@link ByteBuffer} with the byte size of int,
-     * puts {@link }value in this buffer and then rewinds the buffer.
+     * puts value in this buffer and then rewinds the buffer.
      *
      * @param value is written in the byte buffer
      * @return ByteBuffer with int value
