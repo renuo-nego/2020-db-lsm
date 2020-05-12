@@ -9,9 +9,18 @@ import ru.mail.polis.Record;
 import java.io.File;
 import java.io.IOException;
 import java.nio.ByteBuffer;
-import java.nio.file.*;
+import java.nio.file.FileVisitOption;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.StandardCopyOption;
 import java.nio.file.attribute.BasicFileAttributes;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EnumSet;
+import java.util.Iterator;
+import java.util.List;
 
 @SuppressWarnings("ConstantConditions")
 public final class LSMDao implements DAO {
@@ -72,7 +81,7 @@ public final class LSMDao implements DAO {
         }
 
         filesIterators.add(memTable.iterator(from));
-        @SuppressWarnings("UnstableApiUsage") final Iterator<Cell> mergedCells = Iterators.mergeSorted(filesIterators, Cell.COMPARATOR);
+        final Iterator<Cell> mergedCells = Iterators.mergeSorted(filesIterators, Cell.COMPARATOR);
         final Iterator<Cell> cells = Iters.collapseEquals(mergedCells, Cell::getKey);
 
         return Iterators.filter(cells, cell -> !cell.getValue().isRemoved());
