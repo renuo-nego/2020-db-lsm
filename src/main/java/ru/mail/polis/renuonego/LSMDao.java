@@ -113,6 +113,25 @@ public final class LSMDao implements DAO {
     }
 
     @Override
+    public void compact() throws IOException {
+        final Iterator<Cell> cells = cellIterator(ByteBuffer.allocate(0));
+        final File temp = new File(base, PREFIX + 1 + TEMP);
+        SSTable.write(cells, temp);
+
+        for (SSTable ssTable : ssTables) {
+            ssTable.deleteSSTableFile();
+        }
+
+        ssTables.clear();
+
+        final File dest = new File(base, PREFIX + 1 + SUFFIX);
+        Files.move(temp.toPath(), dest.toPath(), StandardCopyOption.ATOMIC_MOVE);
+        ssTables.add(new SSTable(dest));
+
+        generation = ssTables.size() + 1;
+    }
+
+    @Override
     public void close() throws IOException {
         if (memTable.sizeInBytes() != 0) {
             flush();

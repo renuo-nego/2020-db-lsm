@@ -9,6 +9,7 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.LongBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -20,6 +21,7 @@ class SSTable implements Table, Closeable {
     private final int rows;
     private final long sizeInBytes;
     private final FileChannel channel;
+    private final File file;
 
     /**
      * Creates a new SSTable representation of data file.
@@ -28,12 +30,14 @@ class SSTable implements Table, Closeable {
      * @throws IOException if an I/O error is thrown by a visitor method
      */
     SSTable(@NotNull final File file) throws IOException {
+        this.file = file;
         final long fileSize = file.length();
         assert fileSize != 0 && fileSize <= Integer.MAX_VALUE;
         this.sizeInBytes = file.length();
 
         final ByteBuffer mapped;
         try (FileChannel fc = FileChannel.open(file.toPath(), StandardOpenOption.READ)) {
+            assert file.length() <= Integer.MAX_VALUE;
             this.channel = fc;
             mapped = fc.map(FileChannel.MapMode.READ_ONLY, 0L, fileSize).order(ByteOrder.BIG_ENDIAN);
         }
@@ -205,5 +209,9 @@ class SSTable implements Table, Closeable {
     @Override
     public void close() throws IOException {
         channel.close();
+    }
+
+    public void deleteSSTableFile() throws IOException {
+        Files.delete(file.toPath());
     }
 }
