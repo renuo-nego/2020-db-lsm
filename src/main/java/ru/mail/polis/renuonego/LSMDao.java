@@ -118,7 +118,7 @@ public final class LSMDao implements DAO {
         final File temp = new File(base, PREFIX + 1 + TEMP);
         SSTable.write(cells, temp);
 
-        for (SSTable ssTable : ssTables) {
+        for (final SSTable ssTable : ssTables) {
             ssTable.deleteSSTableFile();
         }
 
