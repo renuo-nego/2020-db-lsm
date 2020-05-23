@@ -24,7 +24,7 @@ class MemTable implements Table {
 
     @NotNull
     @Override
-    public Iterator<Cell> reverseIterator(@NotNull ByteBuffer from) {
+    public Iterator<Cell> reverseIterator(@NotNull final ByteBuffer from) {
         //noinspection ConstantConditions
         return Iterators.transform(
                 storage.headMap(from, true).descendingMap().entrySet().iterator(),

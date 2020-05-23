@@ -79,7 +79,7 @@ public final class LSMDao implements DAO {
     }
 
     @NotNull
-    private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from, Order order) throws IOException {
+    private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from, @NotNull final Order order) throws IOException {
 
         final List<Iterator<Cell>> ssTablesIterator = new ArrayList<>();
 
