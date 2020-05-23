@@ -28,12 +28,14 @@ public class ReverseIteratorTest extends TestBase {
     @Test
     public void singleIteration(@TempDir File data) throws IOException {
         try (DAO dao = DAOFactory.create(data)) {
-            dao.upsert(randomKey(), randomValue());
+            final ByteBuffer key = randomKey();
+            final ByteBuffer value = randomValue();
+            dao.upsert(key, value);
 
-            Record record = dao.reverseIterator(randomKey()).next();
+            Record record = dao.reverseIterator(key).next();
 
-            assertEquals(randomKey(), record.getKey());
-            assertEquals(randomValue(), record.getValue());
+            assertEquals(key, record.getKey());
+            assertEquals(value, record.getValue());
         }
     }
 
