@@ -5,11 +5,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.nio.ByteBuffer;
 import java.util.Iterator;
-import java.util.SortedMap;
+import java.util.NavigableMap;
 import java.util.TreeMap;
 
 class MemTable implements Table {
-    @NotNull private final SortedMap<ByteBuffer, Value> storage = new TreeMap<>();
+    @NotNull
+    private final NavigableMap<ByteBuffer, Value> storage = new TreeMap<>();
     private long sizeInBytes;
 
     @NotNull
@@ -19,6 +20,16 @@ class MemTable implements Table {
         return Iterators.transform(
                 storage.tailMap(from).entrySet().iterator(),
                 e -> new Cell(e.getKey(), e.getValue()));
+    }
+
+    @NotNull
+    @Override
+    public Iterator<Cell> reverseIterator(@NotNull ByteBuffer from) {
+        //noinspection ConstantConditions
+        return Iterators.transform(
+                storage.headMap(from, true).descendingMap().entrySet().iterator(),
+                e -> new Cell(e.getKey(), e.getValue())
+        );
     }
 
     @Override

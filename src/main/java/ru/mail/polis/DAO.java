@@ -102,4 +102,8 @@ public interface DAO extends Closeable {
     default void compact() throws IOException {
         // Implement me when you get to stage 3
     }
+
+    default Iterator<Record> reverseIterator(@NotNull ByteBuffer from) throws IOException {
+        throw new UnsupportedOperationException("Implement me when you get to stage 4");
+    }
 }

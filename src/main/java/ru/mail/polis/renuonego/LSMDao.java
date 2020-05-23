@@ -67,21 +67,35 @@ public final class LSMDao implements DAO {
     @NotNull
     @Override
     public Iterator<Record> iterator(@NotNull final ByteBuffer from) throws IOException {
-        return Iterators.transform(cellIterator(from),
+        return Iterators.transform(cellIterator(from, Order.DIRECT),
                 cell -> Record.of(cell.getKey(), cell.getValue().getData()));
     }
 
     @NotNull
-    private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from) throws IOException {
+    @Override
+    public Iterator<Record> reverseIterator(@NotNull final ByteBuffer from) throws IOException {
+        return Iterators.transform(cellIterator(from, Order.REVERSE),
+                cell -> Record.of(cell.getKey(), cell.getValue().getData()));
+    }
 
-        final List<Iterator<Cell>> filesIterators = new ArrayList<>();
+    @NotNull
+    private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from, Order order) throws IOException {
 
-        for (final SSTable ssTable : ssTables) {
-            filesIterators.add(ssTable.iterator(from));
+        final List<Iterator<Cell>> ssTablesIterator = new ArrayList<>();
+
+        if (order == Order.DIRECT) {
+            for (final SSTable ssTable : ssTables) {
+                ssTablesIterator.add(ssTable.iterator(from));
+            }
+            ssTablesIterator.add(memTable.iterator(from));
+        } else {
+            for (final SSTable ssTable : ssTables) {
+                ssTablesIterator.add(ssTable.reverseIterator(from));
+            }
+            ssTablesIterator.add(memTable.reverseIterator(from));
         }
 
-        filesIterators.add(memTable.iterator(from));
-        final Iterator<Cell> mergedCells = Iterators.mergeSorted(filesIterators, Cell.COMPARATOR);
+        final Iterator<Cell> mergedCells = Iterators.mergeSorted(ssTablesIterator, Cell.COMPARATOR);
         final Iterator<Cell> cells = Iters.collapseEquals(mergedCells, Cell::getKey);
 
         return Iterators.filter(cells, cell -> !cell.getValue().isRemoved());
@@ -114,7 +128,7 @@ public final class LSMDao implements DAO {
 
     @Override
     public void compact() throws IOException {
-        final Iterator<Cell> cells = cellIterator(ByteBuffer.allocate(0));
+        final Iterator<Cell> cells = cellIterator(ByteBuffer.allocate(0), Order.DIRECT);
         final File temp = new File(base, PREFIX + 1 + TEMP);
         SSTable.write(cells, temp);
 

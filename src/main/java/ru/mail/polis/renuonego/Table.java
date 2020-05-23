@@ -10,6 +10,9 @@ interface Table {
     @NotNull
     Iterator<Cell> iterator(@NotNull final ByteBuffer from) throws IOException;
 
+    @NotNull
+    Iterator<Cell> reverseIterator(@NotNull final ByteBuffer from) throws IOException;
+
     void upsert(@NotNull final ByteBuffer key,
                 @NotNull final ByteBuffer value) throws IOException;
 
