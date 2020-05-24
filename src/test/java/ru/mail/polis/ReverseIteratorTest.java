@@ -17,7 +17,10 @@ public class ReverseIteratorTest extends TestBase {
     @Test
     public void emptyIterator(@TempDir File data) throws IOException {
         try (DAO dao = DAOFactory.create(data)) {
-            dao.upsert(randomKey(), randomValue());
+            ByteBuffer key;
+            do key = randomKey(); while (key == ByteBuffer.allocate(0));
+
+            dao.upsert(key, randomValue());
 
             final Iterator<Record> iterator = dao.reverseIterator(ByteBuffer.allocate(0));
 
@@ -78,7 +81,7 @@ public class ReverseIteratorTest extends TestBase {
             for (var entry : map.entrySet())
                 dao.upsert(entry.getKey(), entry.getValue());
 
-            Iterator<Record> iterator = dao.reverseIterator(map.lastKey());
+            Iterator<Record> iterator = dao.reverseIterator();
 
             for (var entry : map.descendingMap().entrySet()) {
                 final Record record = iterator.next();

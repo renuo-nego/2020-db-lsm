@@ -3,6 +3,7 @@ package ru.mail.polis.renuonego;
 import com.google.common.collect.Iterators;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.util.Iterator;
 import java.util.NavigableMap;
@@ -28,6 +29,16 @@ class MemTable implements Table {
         //noinspection ConstantConditions
         return Iterators.transform(
                 storage.headMap(from, true).descendingMap().entrySet().iterator(),
+                e -> new Cell(e.getKey(), e.getValue())
+        );
+    }
+
+    @NotNull
+    @Override
+    public Iterator<Cell> reverseIterator() {
+        //noinspection ConstantConditions
+        return Iterators.transform(
+                storage.headMap(storage.lastKey(), true).descendingMap().entrySet().iterator(),
                 e -> new Cell(e.getKey(), e.getValue())
         );
     }

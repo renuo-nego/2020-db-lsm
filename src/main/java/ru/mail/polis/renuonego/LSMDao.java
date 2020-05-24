@@ -79,6 +79,13 @@ public final class LSMDao implements DAO {
     }
 
     @NotNull
+    @Override
+    public Iterator<Record> reverseIterator() throws IOException {
+        return Iterators.transform(cellIterator(ByteBuffer.allocate(0), Order.REVERSE),
+                cell -> Record.of(cell.getKey(), cell.getValue().getData()));
+    }
+
+    @NotNull
     private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from, @NotNull final Order order) throws IOException {
 
         final List<Iterator<Cell>> ssTablesIterator = new ArrayList<>();
@@ -88,11 +95,16 @@ public final class LSMDao implements DAO {
                 ssTablesIterator.add(ssTable.iterator(from));
             }
             ssTablesIterator.add(memTable.iterator(from));
-        } else {
+        } else if (order == Order.REVERSE){
             for (final SSTable ssTable : ssTables) {
                 ssTablesIterator.add(ssTable.reverseIterator(from));
             }
             ssTablesIterator.add(memTable.reverseIterator(from));
+        } else {
+            for (final SSTable ssTable : ssTables) {
+                ssTablesIterator.add(ssTable.reverseIterator());
+            }
+            ssTablesIterator.add(memTable.reverseIterator());
         }
 
         final Iterator<Cell> mergedCells = Iterators.mergeSorted(ssTablesIterator, Cell.COMPARATOR);

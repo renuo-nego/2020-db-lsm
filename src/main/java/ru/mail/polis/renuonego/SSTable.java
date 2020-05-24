@@ -210,6 +210,25 @@ class SSTable implements Table, Closeable {
         };
     }
 
+    @NotNull
+    @Override
+    public Iterator<Cell> reverseIterator() {
+        return new Iterator<>() {
+            int last = position(keyAt(rows), Order.REVERSE_FROM_LAST);
+
+            @Override
+            public boolean hasNext() {
+                return last >= 0;
+            }
+
+            @Override
+            public Cell next() {
+                assert hasNext();
+                return cellAt(last--);
+            }
+        };
+    }
+
     @Override
     public void upsert(@NotNull final ByteBuffer key, @NotNull final ByteBuffer value) {
         throw new UnsupportedOperationException("SSTable is immutable");
