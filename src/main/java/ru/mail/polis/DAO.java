@@ -103,7 +103,6 @@ public interface DAO extends Closeable {
         // Implement me when you get to stage 3
     }
 
-
     /**
      * Provides reversed iterator (possibly empty) over {@link Record}s starting at "from" key (inclusive)
      * until given "to" key (inclusive) in <b>descending</b> order according to {@link Record#compareTo(Record)}.

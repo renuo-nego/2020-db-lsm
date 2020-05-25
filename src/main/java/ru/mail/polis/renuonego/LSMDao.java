@@ -87,22 +87,26 @@ public final class LSMDao implements DAO {
 
     @NotNull
     @SuppressWarnings("ReferenceEquality")
-    private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from, @NotNull final Boolean isDirect) throws IOException {
+    private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from,
+                                        @NotNull final Boolean isDirect) throws IOException {
 
         final List<Iterator<Cell>> ssTablesIterator = new ArrayList<>();
 
         if (isDirect) {
-            for (final SSTable ssTable : ssTables)
+            for (final SSTable ssTable : ssTables) {
                 ssTablesIterator.add(ssTable.iterator(from));
+            }
             ssTablesIterator.add(memTable.iterator(from));
         } else {
             if (from == MAX_REACHABLE_VALUE) {
-                for (final SSTable ssTable : ssTables)
+                for (final SSTable ssTable : ssTables) {
                     ssTablesIterator.add(ssTable.reverseIterator());
+                }
                 ssTablesIterator.add(memTable.reverseIterator());
             } else {
-                for (final SSTable ssTable : ssTables)
+                for (final SSTable ssTable : ssTables) {
                     ssTablesIterator.add(ssTable.reverseIterator(from));
+                }
                 ssTablesIterator.add(memTable.reverseIterator(from));
             }
         }
