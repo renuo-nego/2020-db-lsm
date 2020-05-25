@@ -114,7 +114,7 @@ class SSTable implements Table, Closeable {
     }
 
     private ByteBuffer keyAt(final int i) {
-        assert 0 <= i && i < rows;
+        assert 0 <= i && i <= rows;
 
         final long offset = offsets.get(i);
         assert offset <= Integer.MAX_VALUE;
@@ -153,7 +153,7 @@ class SSTable implements Table, Closeable {
         }
     }
 
-    private int position(@NotNull final ByteBuffer from, @NotNull final Order order) {
+    private int position(@NotNull final ByteBuffer from, @NotNull final Boolean isDirect) {
         int left = 0;
         int right = rows - 1;
 
@@ -169,14 +169,14 @@ class SSTable implements Table, Closeable {
                 return mid;
             }
         }
-        return order == Order.DIRECT ? left : right;
+        return isDirect ? left : right;
     }
 
     @NotNull
     @Override
     public Iterator<Cell> iterator(@NotNull final ByteBuffer from) {
         return new Iterator<>() {
-            int next = position(from, Order.DIRECT);
+            int next = position(from, true);
 
             @Override
             public boolean hasNext() {
@@ -195,7 +195,7 @@ class SSTable implements Table, Closeable {
     @Override
     public Iterator<Cell> reverseIterator(@NotNull final ByteBuffer from) {
         return new Iterator<>() {
-            int next = position(from, Order.REVERSE);
+            int next = position(from, false);
 
             @Override
             public boolean hasNext() {
@@ -214,7 +214,7 @@ class SSTable implements Table, Closeable {
     @Override
     public Iterator<Cell> reverseIterator() {
         return new Iterator<>() {
-            int last = position(keyAt(rows), Order.REVERSE_FROM_LAST);
+            int last = rows - 1;
 
             @Override
             public boolean hasNext() {

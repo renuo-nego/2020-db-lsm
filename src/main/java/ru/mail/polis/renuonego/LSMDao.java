@@ -22,11 +22,11 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 
-@SuppressWarnings("ConstantConditions")
 public final class LSMDao implements DAO {
     private static final String SUFFIX = ".dat";
     private static final String TEMP = ".tmp";
     private static final String PREFIX = "SSTABLE";
+    private static final ByteBuffer MAX_REACHABLE_VALUE = ByteBuffer.allocate(0);
 
     private Table memTable = new MemTable();
     private final File base;
@@ -67,44 +67,44 @@ public final class LSMDao implements DAO {
     @NotNull
     @Override
     public Iterator<Record> iterator(@NotNull final ByteBuffer from) throws IOException {
-        return Iterators.transform(cellIterator(from, Order.DIRECT),
+        return Iterators.transform(cellIterator(from, true),
                 cell -> Record.of(cell.getKey(), cell.getValue().getData()));
     }
 
     @NotNull
     @Override
     public Iterator<Record> reverseIterator(@NotNull final ByteBuffer from) throws IOException {
-        return Iterators.transform(cellIterator(from, Order.REVERSE),
+        return Iterators.transform(cellIterator(from, false),
                 cell -> Record.of(cell.getKey(), cell.getValue().getData()));
     }
 
     @NotNull
     @Override
     public Iterator<Record> reverseIterator() throws IOException {
-        return Iterators.transform(cellIterator(ByteBuffer.allocate(0), Order.REVERSE),
+        return Iterators.transform(cellIterator(MAX_REACHABLE_VALUE, false),
                 cell -> Record.of(cell.getKey(), cell.getValue().getData()));
     }
 
     @NotNull
-    private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from, @NotNull final Order order) throws IOException {
+    @SuppressWarnings("ReferenceEquality")
+    private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from, @NotNull final Boolean isDirect) throws IOException {
 
         final List<Iterator<Cell>> ssTablesIterator = new ArrayList<>();
 
-        if (order == Order.DIRECT) {
-            for (final SSTable ssTable : ssTables) {
+        if (isDirect) {
+            for (final SSTable ssTable : ssTables)
                 ssTablesIterator.add(ssTable.iterator(from));
-            }
             ssTablesIterator.add(memTable.iterator(from));
-        } else if (order == Order.REVERSE){
-            for (final SSTable ssTable : ssTables) {
-                ssTablesIterator.add(ssTable.reverseIterator(from));
-            }
-            ssTablesIterator.add(memTable.reverseIterator(from));
         } else {
-            for (final SSTable ssTable : ssTables) {
-                ssTablesIterator.add(ssTable.reverseIterator());
+            if (from == MAX_REACHABLE_VALUE) {
+                for (final SSTable ssTable : ssTables)
+                    ssTablesIterator.add(ssTable.reverseIterator());
+                ssTablesIterator.add(memTable.reverseIterator());
+            } else {
+                for (final SSTable ssTable : ssTables)
+                    ssTablesIterator.add(ssTable.reverseIterator(from));
+                ssTablesIterator.add(memTable.reverseIterator(from));
             }
-            ssTablesIterator.add(memTable.reverseIterator());
         }
 
         final Iterator<Cell> mergedCells = Iterators.mergeSorted(ssTablesIterator, Cell.COMPARATOR);
@@ -140,7 +140,7 @@ public final class LSMDao implements DAO {
 
     @Override
     public void compact() throws IOException {
-        final Iterator<Cell> cells = cellIterator(ByteBuffer.allocate(0), Order.DIRECT);
+        final Iterator<Cell> cells = cellIterator(ByteBuffer.allocate(0), true);
         final File temp = new File(base, PREFIX + 1 + TEMP);
         SSTable.write(cells, temp);
 
