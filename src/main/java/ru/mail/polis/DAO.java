@@ -105,7 +105,7 @@ public interface DAO extends Closeable {
 
     /**
      * Provides reversed iterator (possibly empty) over {@link Record}s starting at "from" key (inclusive)
-     * until given "to" key (inclusive) in <b>descending</b> order according to {@link Record#compareTo(Record)}.
+     * in <b>descending</b> order according to {@link Record#compareTo(Record)}.
      */
     default Iterator<Record> reverseIterator(@NotNull ByteBuffer from) throws IOException {
         throw new UnsupportedOperationException("Implement me when you get to stage 4");
