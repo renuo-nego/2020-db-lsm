@@ -86,9 +86,7 @@ public final class LSMDao implements DAO {
     }
 
     @NotNull
-    @SuppressWarnings("ReferenceEquality")
-    private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from,
-                                        @NotNull final Boolean isDirect) throws IOException {
+    private Iterator<Cell> cellIterator(@NotNull final ByteBuffer from, final boolean isDirect) throws IOException {
 
         final List<Iterator<Cell>> ssTablesIterator = new ArrayList<>();
 
@@ -98,7 +96,7 @@ public final class LSMDao implements DAO {
             }
             ssTablesIterator.add(memTable.iterator(from));
         } else {
-            if (from == MAX_REACHABLE_VALUE) {
+            if (isUnreachableLastKey(from)) {
                 for (final SSTable ssTable : ssTables) {
                     ssTablesIterator.add(ssTable.reverseIterator());
                 }
@@ -115,6 +113,11 @@ public final class LSMDao implements DAO {
         final Iterator<Cell> cells = Iters.collapseEquals(mergedCells, Cell::getKey);
 
         return Iterators.filter(cells, cell -> !cell.getValue().isRemoved());
+    }
+
+    @SuppressWarnings("ReferenceEquality")
+    private boolean isUnreachableLastKey(@NotNull final ByteBuffer from) {
+        return from == MAX_REACHABLE_VALUE;
     }
 
     @Override
